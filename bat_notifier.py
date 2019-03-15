@@ -1,8 +1,8 @@
 import sys
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore,QtGui
 from PyQt5.QtWidgets import QToolTip, QMainWindow, QSlider, QSpinBox, QPushButton, QProgressBar
 from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtCore import Qt, pyqtSignal, QThread
+from PyQt5.QtCore import Qt, pyqtSignal
 # import threading
 import psutil
 from win10toast import ToastNotifier
@@ -98,10 +98,10 @@ class Window(QtWidgets.QMainWindow):
         #self.bat_display.setValue(self.bat_details())
         self.bat_display.setFont(QFont('SansSerif', 20, weight=QFont.Bold))
 
-        # self.created_by = QtWidgets.QLabel('<B> Created by- Sahaj Oberoi</B>', self)
-        # self.created_by.setGeometry(620, 440, 300, 50)
-        # self.to_contact = QtWidgets.QLabel('<B> Contact for feedback- oberoi_sahaj@yahoo.com</B>', self)
-        # self.to_contact.setGeometry(500, 460, 570, 50)
+        self.created_by = QtWidgets.QLabel('<B> Created by- Sahaj Oberoi</B>', self)
+        self.created_by.setGeometry(620, 440, 300, 50)
+        self.to_contact = QtWidgets.QLabel('<B> Contact for feedback- oberoi_sahaj@yahoo.com</B>', self)
+        self.to_contact.setGeometry(500, 460, 570, 50)
 
         self.setWindowTitle('Battery Notifier')
         self.setWindowIcon(QIcon('Icon.png'))
@@ -109,17 +109,24 @@ class Window(QtWidgets.QMainWindow):
         self.show()
 
     def notification(self):
+        QtGui.QGuiApplication.processEvents()
         while True:
             self.b = psutil.sensors_battery()
             self.percent = self.b.percent
             self.plugged = self.b.power_plugged
-
+            QtGui.QGuiApplication.processEvents()
             if not self.plugged and self.percent <= self.l_set.value():
                 self.notif.show_toast("Battery is at {}%. ".format(self.percent), "Plug in the Charger!")
-
+            QtGui.QGuiApplication.processEvents()
             if self.plugged and self.percent >= self.h_set.value():
                 self.notif.show_toast("Battery is at {}%. ".format(self.percent), "Unplug the Charger!")
+
+            QtGui.QGuiApplication.processEvents()
             time.sleep(int(self.n_interval.text()))
+            QtGui.QGuiApplication.processEvents()
+
+    def closeEvent(self, event):
+        sys.exit()
 
     def update_progressbar(self, val):
         self.bat_display.setValue(val)
@@ -140,3 +147,5 @@ class ThreadClass(QtCore.QThread):
 app = QtWidgets.QApplication(sys.argv)
 a_window = Window()
 sys.exit(app.exec_())
+
+## QtCore.QCoreApplication.processEvents()
