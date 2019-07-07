@@ -1,14 +1,12 @@
 import sys
 from PyQt5 import QtWidgets, QtCore,QtGui
-from PyQt5.QtWidgets import QToolTip, QMainWindow, QSlider, QSpinBox, QPushButton, QProgressBar
+from PyQt5.QtWidgets import QToolTip, QSlider, QSpinBox, QPushButton, QProgressBar
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, pyqtSignal
 # import threading
 import psutil
 from win10toast import ToastNotifier
 import time
-import batt_det
-
 
 class Window(QtWidgets.QMainWindow):
 
@@ -137,13 +135,19 @@ class ThreadClass(QtCore.QThread):
     def __init__(self, parent=None):
         super(ThreadClass, self).__init__(parent)
 
+
+
     def run(self):
         while True:
-            val = batt_det.bat_details()
+            val = bat_details()
             time.sleep(1)
             self.update_progressbar.emit(val)
 
-
+def bat_details():
+    while True:
+        b = psutil.sensors_battery()
+        p = b.percent
+        return p
 app = QtWidgets.QApplication(sys.argv)
 a_window = Window()
 sys.exit(app.exec_())
