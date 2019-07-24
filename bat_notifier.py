@@ -1,12 +1,14 @@
 import sys
 from PyQt5 import QtWidgets, QtCore,QtGui
-from PyQt5.QtWidgets import QToolTip, QSlider, QSpinBox, QPushButton, QProgressBar
+from PyQt5.QtWidgets import QToolTip, QMainWindow, QSlider, QSpinBox, QPushButton, QProgressBar
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, pyqtSignal
 # import threading
 import psutil
 from win10toast import ToastNotifier
 import time
+import batt_det
+
 
 class Window(QtWidgets.QMainWindow):
 
@@ -26,7 +28,7 @@ class Window(QtWidgets.QMainWindow):
         self.InitWindow()
         self.threadclass = ThreadClass()
         self.threadclass.start()
-        self.threadclass.update_progressbar.connect(self.update_progressbar)
+        self.threadclass.update_progressbar_signal.connect(self.update_progressbar)
 
     def InitWindow(self):
 
@@ -119,9 +121,7 @@ class Window(QtWidgets.QMainWindow):
             if self.plugged and self.percent >= self.h_set.value():
                 self.notif.show_toast("Battery is at {}%. ".format(self.percent), "Unplug the Charger!")
 
-            QtGui.QGuiApplication.processEvents()
             time.sleep(int(self.n_interval.text()))
-            QtGui.QGuiApplication.processEvents()
 
     def closeEvent(self, event):
         sys.exit()
@@ -130,26 +130,19 @@ class Window(QtWidgets.QMainWindow):
         self.bat_display.setValue(val)
 
 class ThreadClass(QtCore.QThread):
-    update_progressbar = pyqtSignal(float)
+    update_progressbar_signal = pyqtSignal(float)
 
     def __init__(self, parent=None):
         super(ThreadClass, self).__init__(parent)
 
-
-
     def run(self):
         while True:
-            val = bat_details()
+            val = batt_det.bat_details()
             time.sleep(1)
-            self.update_progressbar.emit(val)
+            self.update_progressbar_signal.emit(val)
 
-def bat_details():
-    while True:
-        b = psutil.sensors_battery()
-        p = b.percent
-        return p
+
 app = QtWidgets.QApplication(sys.argv)
 a_window = Window()
 sys.exit(app.exec_())
 
-## QtCore.QCoreApplication.processEvents()
